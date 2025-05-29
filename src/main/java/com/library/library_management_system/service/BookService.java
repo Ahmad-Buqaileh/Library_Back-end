@@ -1,11 +1,11 @@
 package com.library.library_management_system.service;
 
-import com.library.library_management_system.CustomException.CantDeleteBorrwedBookException;
-import com.library.library_management_system.CustomException.EmptyListException;
-import com.library.library_management_system.CustomException.ResourceNotFoundException;
-import com.library.library_management_system.CustomException.UnauthorizedAccessException;
-import com.library.library_management_system.Enum.BookStatus;
-import com.library.library_management_system.Enum.MemberRole;
+import com.library.library_management_system.exception.CantDeleteBorrwedBookException;
+import com.library.library_management_system.exception.EmptyListException;
+import com.library.library_management_system.exception.ResourceNotFoundException;
+import com.library.library_management_system.exception.UnauthorizedAccessException;
+import com.library.library_management_system.enums.BookStatus;
+import com.library.library_management_system.enums.MemberRole;
 import com.library.library_management_system.model.Book;
 import com.library.library_management_system.model.Member;
 import com.library.library_management_system.repository.BookRepository;
@@ -59,7 +59,7 @@ public class BookService {
             book.setBookAuthor(updatedbook.getBookAuthor());
             book.setPublishedDate(updatedbook.getPublishedDate());
             book.setBookGenre(updatedbook.getBookGenre());
-            return bookRepository.save(book);
+            return bookRepository.save( book);
         }).orElseThrow(() -> new ResourceNotFoundException("Book with ID " + bookId + " not found!"));
     }
 

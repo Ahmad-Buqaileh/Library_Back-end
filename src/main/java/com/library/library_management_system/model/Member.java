@@ -1,6 +1,6 @@
 package com.library.library_management_system.model;
 
-import com.library.library_management_system.Enum.MemberRole;
+import com.library.library_management_system.enums.MemberRole;
 import jakarta.persistence.*;
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.library.library_management_system.Enum;
+package com.library.library_management_system.enums;
 
 public enum BookStatus {
     BORROWED,
