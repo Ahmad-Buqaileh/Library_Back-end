@@ -1,6 +1,6 @@
 package com.library.library_management_system.model;
 
-import com.library.library_management_system.Enum.BookStatus;
+import com.library.library_management_system.enums.BookStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 

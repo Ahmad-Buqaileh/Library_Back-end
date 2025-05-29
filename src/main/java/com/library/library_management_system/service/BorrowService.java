@@ -1,18 +1,17 @@
 package com.library.library_management_system.service;
 
 
-import com.library.library_management_system.CustomException.BookIsBorrowedException;
-import com.library.library_management_system.CustomException.BookIsNotBorrowedException;
-import com.library.library_management_system.CustomException.ResourceNotFoundException;
-import com.library.library_management_system.CustomException.UnauthorizedAccessException;
-import com.library.library_management_system.Enum.BookStatus;
-import com.library.library_management_system.Enum.MemberRole;
+import com.library.library_management_system.exception.BookIsBorrowedException;
+import com.library.library_management_system.exception.BookIsNotBorrowedException;
+import com.library.library_management_system.exception.ResourceNotFoundException;
+import com.library.library_management_system.exception.UnauthorizedAccessException;
+import com.library.library_management_system.enums.BookStatus;
+import com.library.library_management_system.enums.MemberRole;
 import com.library.library_management_system.model.Book;
 import com.library.library_management_system.model.Borrow;
 import com.library.library_management_system.model.Member;
 import com.library.library_management_system.repository.BookRepository;
 import com.library.library_management_system.repository.BorrowRepository;
-import com.library.library_management_system.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

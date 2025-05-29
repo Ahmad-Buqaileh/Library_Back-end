@@ -2,10 +2,10 @@
 package com.library.library_management_system.service;
 
 
-import com.library.library_management_system.CustomException.EmptyListException;
-import com.library.library_management_system.CustomException.ResourceNotFoundException;
-import com.library.library_management_system.CustomException.UnauthorizedAccessException;
-import com.library.library_management_system.Enum.MemberRole;
+import com.library.library_management_system.exception.EmptyListException;
+import com.library.library_management_system.exception.ResourceNotFoundException;
+import com.library.library_management_system.exception.UnauthorizedAccessException;
+import com.library.library_management_system.enums.MemberRole;
 import com.library.library_management_system.model.Member;
 import com.library.library_management_system.repository.MemberRepository;
 import org.springframework.stereotype.Service;
