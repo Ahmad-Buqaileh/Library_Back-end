@@ -1,8 +1,8 @@
 package com.library.library_management_system.repository;
 
 import com.library.library_management_system.enums.BookStatus;
-import com.library.library_management_system.model.Borrow;
-import com.library.library_management_system.model.Member;
+import com.library.library_management_system.entity.Borrow;
+import com.library.library_management_system.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -6,8 +6,8 @@ import com.library.library_management_system.exception.ResourceNotFoundException
 import com.library.library_management_system.exception.UnauthorizedAccessException;
 import com.library.library_management_system.enums.BookStatus;
 import com.library.library_management_system.enums.MemberRole;
-import com.library.library_management_system.model.Book;
-import com.library.library_management_system.model.Member;
+import com.library.library_management_system.entity.Book;
+import com.library.library_management_system.entity.Member;
 import com.library.library_management_system.repository.BookRepository;
 import org.springframework.stereotype.Service;
 

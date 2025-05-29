@@ -1,7 +1,7 @@
 package com.library.library_management_system.controller;
 
 import com.library.library_management_system.exception.ResourceNotFoundException;
-import com.library.library_management_system.model.Member;
+import com.library.library_management_system.entity.Member;
 import com.library.library_management_system.repository.MemberRepository;
 import com.library.library_management_system.service.MemberService;
 import org.springframework.web.bind.annotation.*;

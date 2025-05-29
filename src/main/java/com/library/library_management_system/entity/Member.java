@@ -1,4 +1,4 @@
-package com.library.library_management_system.model;
+package com.library.library_management_system.entity;
 
 import com.library.library_management_system.enums.MemberRole;
 import jakarta.persistence.*;
