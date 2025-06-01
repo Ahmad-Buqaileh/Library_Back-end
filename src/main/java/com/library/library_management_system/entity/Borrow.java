@@ -11,13 +11,13 @@ public class Borrow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long borrowId;
+    private Long id;
 
-    private LocalDate borrowDate;
+    private LocalDate borrow_date;
 
     @ManyToOne
     @JoinColumn(name = "member_id_fk")
-    private Member member;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "book_id_fk")

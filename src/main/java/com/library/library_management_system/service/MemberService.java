@@ -6,7 +6,7 @@ import com.library.library_management_system.exception.EmptyListException;
 import com.library.library_management_system.exception.ResourceNotFoundException;
 import com.library.library_management_system.exception.UnauthorizedAccessException;
 import com.library.library_management_system.enums.MemberRole;
-import com.library.library_management_system.entity.Member;
+import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 
@@ -21,68 +21,68 @@ public class MemberService {
         this.memberRepository = memberRepository;
     }
 
-    public List<Member> getAllMembers(Member requestor) {
-        if (requestor.getMemberRole() != MemberRole.ADMIN) {
+    public List<User> getAllMembers(User requestor) {
+        if (requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("Only admins are allowed to view members");
         }
 
-        List<Member> memberList = memberRepository.findAll();
+        List<User> userList = memberRepository.findAll();
 
-        if (memberList.isEmpty()) {
+        if (userList.isEmpty()) {
             throw new EmptyListException("Library has no registered members");
         }
 
-        return memberList;
+        return userList;
     }
 
-    public Member getMemberById(Long memberId, Member requestor) {
-        if (requestor.getMemberRole() != MemberRole.ADMIN) {
+    public User getMemberById(Long memberId, User requestor) {
+        if (requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("Only admins are allowed to view members");
         }
         return memberRepository.findById(memberId).orElseThrow(
                 () -> new ResourceNotFoundException("Member with id " + memberId + " not found"));
     }
 
-    public Member getMemberByEmail(String email, Member requestor) {
+    public User getMemberByEmail(String email, User requestor) {
 
-        if (requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("Only admins are allowed to view members");
         }
 
-        Member member = memberRepository.findByMemberEmail(email);
-        if (member == null) {
+        User user = memberRepository.findByEmail(email);
+        if (user == null) {
             throw new ResourceNotFoundException("Member with email " + email + " not found");
         }
 
-        return member;
+        return user;
     }
 
-    public Member addMember(Member member) {
+    public User addMember(User user) {
 
-        if (memberRepository.findByMemberEmail(member.getMemberEmail()) != null) {
+        if (memberRepository.findByEmail(user.getEmail()) != null) {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        return memberRepository.save(member);
+        return memberRepository.save(user);
     }
 
-    public Member updateMember(Long memberId, Member updateMember, Member requestor) {
+    public User updateMember(Long memberId, User updateUser, User requestor) {
 
-        if (!requestor.getMemberId().equals(memberId) && requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (!requestor.getId().equals(memberId) && requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("You can only update your own account.");
         }
 
         return memberRepository.findById(memberId).map(member -> {
-            member.setMemberName(updateMember.getMemberName());
-            member.setMemberEmail(updateMember.getMemberEmail());
+            member.setName(updateUser.getName());
+            member.setEmail(updateUser.getEmail());
             return memberRepository.save(member);
         }).orElseThrow(() -> new ResourceNotFoundException("Member with id " + memberId + " not found"));
 
     }
 
-    public void deleteMember(Long memberId, Member requestor) {
+    public void deleteMember(Long memberId, User requestor) {
 
-        if (!requestor.getMemberId().equals(memberId) && requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (!requestor.getId().equals(memberId) && requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("You can only delete your own account.");
         }
 

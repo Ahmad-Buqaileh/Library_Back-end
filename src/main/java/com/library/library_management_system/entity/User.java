@@ -6,18 +6,18 @@ import lombok.Data;
 
 import java.time.LocalDate;
 @Entity
-@Table(name = "members")
+@Table(name = "users")
 @Data
-public class Member {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberId;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
-    private MemberRole memberRole;
+    private MemberRole role;
 
-    private String memberName;
-    private String memberEmail;
-    private LocalDate memberShipDate;
+    private String name;
+    private String email;
+    private LocalDate registration_date;
 }

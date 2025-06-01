@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: borrows-1
+      author: ahmad
+      changes:
+        - createTable:
+            tableName: borrows
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: borrow_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: member_id_fk
+                  type: BIGINT
+              - column:
+                  name: book_id_fk
+                  type: BIGINT
+
+        - addForeignKeyConstraint:
+            baseTableName: borrows
+            baseColumnNames: member_id_fk
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_borrow_user
+
+        - addForeignKeyConstraint:
+            baseTableName: borrows
+            baseColumnNames: book_id_fk
+            referencedTableName: books
+            referencedColumnNames: id
+            constraintName: fk_borrow_book
+
+      rollback:
+        - dropTable:
+            tableName: borrows

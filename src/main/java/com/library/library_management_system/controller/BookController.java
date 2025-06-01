@@ -2,7 +2,7 @@ package com.library.library_management_system.controller;
 
 import com.library.library_management_system.exception.ResourceNotFoundException;
 import com.library.library_management_system.entity.Book;
-import com.library.library_management_system.entity.Member;
+import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.MemberRepository;
 import com.library.library_management_system.service.BookService;
 import org.springframework.web.bind.annotation.*;
@@ -33,21 +33,21 @@ public class BookController {
 
     @PostMapping
     public Book addBook(@RequestBody Book book, @RequestParam Long memberId) {
-        Member requestor = memberRepository.findById(memberId)
+        User requestor = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         return bookService.addBook(book, requestor);
     }
 
     @PutMapping("/{id}")
     public Book updateBook(@PathVariable Long id, @RequestBody Book book, @RequestParam Long memberId) {
-        Member requestor = memberRepository.findById(memberId).orElseThrow(
+        User requestor = memberRepository.findById(memberId).orElseThrow(
                 () -> new ResourceNotFoundException("Member not found"));
         return bookService.updateBook(id, book, requestor);
     }
 
     @DeleteMapping("/{id}")
     public void deleteBook(@PathVariable Long id, @RequestParam Long memberId) {
-        Member requestor = memberRepository.findById(memberId).orElseThrow(
+        User requestor = memberRepository.findById(memberId).orElseThrow(
                 () -> new ResourceNotFoundException("Member not found"));
         bookService.deleteBook(id, requestor);
     }

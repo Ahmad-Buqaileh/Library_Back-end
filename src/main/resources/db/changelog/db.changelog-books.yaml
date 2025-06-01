@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: books-1
+      author: ahmad
+      changes:
+        - createTable:
+            tableName: books
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: author
+                  type: VARCHAR(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: genre
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: publish_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+
+      rollback:
+        - dropTable:
+            tableName: books

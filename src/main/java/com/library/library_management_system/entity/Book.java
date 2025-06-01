@@ -13,14 +13,14 @@ public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bookId;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
-    private BookStatus bookStatus;
+    private BookStatus status;
 
-    private String bookTitle;
-    private String bookAuthor;
-    private Date publishedDate;
-    private String bookGenre;
+    private String title;
+    private String author;
+    private String genre;
+    private Date publish_date;
 
 }
