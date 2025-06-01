@@ -9,7 +9,7 @@ import com.library.library_management_system.enums.BookStatus;
 import com.library.library_management_system.enums.MemberRole;
 import com.library.library_management_system.entity.Book;
 import com.library.library_management_system.entity.Borrow;
-import com.library.library_management_system.entity.Member;
+import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.BookRepository;
 import com.library.library_management_system.repository.BorrowRepository;
 import org.springframework.stereotype.Service;
@@ -31,54 +31,54 @@ public class BorrowService {
         this.bookBorrowRepository = bookBorrowRepository;
     }
 
-    public List<Book> getAllBorrowedBooksFromLibrary(Member requestor) {
+    public List<Book> getAllBorrowedBooksFromLibrary(User requestor) {
 
-        if (requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("Only admins can see borrowed books");
         }
 
-        return bookRepository.findByBookStatus(BookStatus.BORROWED);
+        return bookRepository.findByStatus(BookStatus.BORROWED);
     }
 
-    public List<Borrow> getAllBorrowedBooksFromMember(Member requestor, Member member) {
+    public List<Borrow> getAllBorrowedBooksFromMember(User requestor, User user) {
 
-        if (!requestor.getMemberId().equals(member.getMemberId()) && requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (!requestor.getId().equals(user.getId()) && requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("You can only see your borrowed books");
         }
-        return  borrowRepository.findByMemberAndBook_BookStatus(member, BookStatus.BORROWED);
+        return  borrowRepository.findByUserAndBook_status(user, BookStatus.BORROWED);
     }
 
-    public Borrow bookBorrow(Member member, Book book) {
-        if (book.getBookStatus() != BookStatus.AVAILABLE) {
+    public Borrow bookBorrow(User user, Book book) {
+        if (book.getStatus() != BookStatus.AVAILABLE) {
             throw new BookIsBorrowedException("Book is already borrowed");
         }
 
-        book.setBookStatus(BookStatus.BORROWED);
+        book.setStatus(BookStatus.BORROWED);
         bookRepository.save(book);
 
         Borrow borrow = new Borrow();
-        borrow.setMember(member);
+        borrow.setUser(user);
         borrow.setBook(book);
-        borrow.setBorrowDate(LocalDate.now());
+        borrow.setBorrow_date(LocalDate.now());
 
         return borrowRepository.save(borrow);
 
     }
 
-    public void returnBook(Long borrowId, Member member, Book book) {
+    public void returnBook(Long borrowId, User user, Book book) {
 
-        if (book.getBookStatus() != BookStatus.BORROWED) {
+        if (book.getStatus() != BookStatus.BORROWED) {
             throw new BookIsNotBorrowedException("Book is not currently borrowed.");
         }
 
         Borrow borrow = borrowRepository.findById(borrowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Borrow record not found."));
 
-        if (!borrow.getMember().getMemberId().equals(member.getMemberId())) {
+        if (!borrow.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedAccessException("You can only return books you have borrowed.");
         }
 
-        book.setBookStatus(BookStatus.AVAILABLE);
+        book.setStatus(BookStatus.AVAILABLE);
         bookRepository.save(book);
 
         borrowRepository.deleteById(borrowId);

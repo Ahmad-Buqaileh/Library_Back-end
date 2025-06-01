@@ -3,7 +3,7 @@ package com.library.library_management_system.controller;
 import com.library.library_management_system.exception.ResourceNotFoundException;
 import com.library.library_management_system.entity.Book;
 import com.library.library_management_system.entity.Borrow;
-import com.library.library_management_system.entity.Member;
+import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.BookRepository;
 import com.library.library_management_system.repository.MemberRepository;
 import com.library.library_management_system.service.BorrowService;
@@ -27,32 +27,32 @@ public class BorrowController {
 
     @GetMapping("/member/{memberId}")
     public List<Borrow> getBorrowedBooksFromMember(@PathVariable Long memberId, @RequestParam Long requestorId) {
-        Member member = memberRepository.findById(memberId)
+        User user = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
-        Member requestor = memberRepository.findById(requestorId)
+        User requestor = memberRepository.findById(requestorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Requestor not found"));
 
-        return borrowService.getAllBorrowedBooksFromMember(requestor, member);
+        return borrowService.getAllBorrowedBooksFromMember(requestor, user);
     }
 
     @PostMapping
     public Borrow borrowBook(@RequestParam Long memberId, @RequestParam Long bookId) {
-        Member member = memberRepository.findById(memberId)
+        User user = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
 
-        return borrowService.bookBorrow(member, book);
+        return borrowService.bookBorrow(user, book);
     }
 
     @DeleteMapping("/{id}")
     public void returnBook(@PathVariable Long id, @RequestParam Long memberId, @RequestParam Long bookId) {
 
-        Member member = memberRepository.findById(memberId)
+        User user = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
 
-        borrowService.returnBook(id, member, book);
+        borrowService.returnBook(id, user, book);
     }
 }

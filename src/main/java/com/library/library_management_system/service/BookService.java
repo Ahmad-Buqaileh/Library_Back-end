@@ -7,7 +7,7 @@ import com.library.library_management_system.exception.UnauthorizedAccessExcepti
 import com.library.library_management_system.enums.BookStatus;
 import com.library.library_management_system.enums.MemberRole;
 import com.library.library_management_system.entity.Book;
-import com.library.library_management_system.entity.Member;
+import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
@@ -39,40 +39,40 @@ public class BookService {
 
     }
 
-    public Book addBook(Book book, Member requestor) {
+    public Book addBook(Book book, User requestor) {
 
-        if (requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("Only admins are allowed to add a book to the library!");
         }
 
         return bookRepository.save(book);
     }
 
-    public Book updateBook(Long bookId, Book updatedbook, Member requestor) {
+    public Book updateBook(Long bookId, Book updatedbook, User requestor) {
 
-        if (requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("Only admins are allowed to update a book to the library!");
         }
 
         return bookRepository.findById(bookId).map(book -> {
-            book.setBookTitle(updatedbook.getBookTitle());
-            book.setBookAuthor(updatedbook.getBookAuthor());
-            book.setPublishedDate(updatedbook.getPublishedDate());
-            book.setBookGenre(updatedbook.getBookGenre());
+            book.setTitle(updatedbook.getTitle());
+            book.setAuthor(updatedbook.getAuthor());
+            book.setPublish_date(updatedbook.getPublish_date());
+            book.setGenre(updatedbook.getGenre());
             return bookRepository.save( book);
         }).orElseThrow(() -> new ResourceNotFoundException("Book with ID " + bookId + " not found!"));
     }
 
-    public void deleteBook(Long bookId, Member requestor) {
+    public void deleteBook(Long bookId, User requestor) {
 
-        if (requestor.getMemberRole() != MemberRole.ADMIN) {
+        if (requestor.getRole() != MemberRole.ADMIN) {
             throw new UnauthorizedAccessException("Only admins are allowed to delete a book from the library!");
         }
 
         Book book = bookRepository.findById(bookId).orElseThrow(
                 () -> new ResourceNotFoundException("Book with ID " + bookId + " not found!"));
 
-        if (book.getBookStatus() != BookStatus.AVAILABLE) {
+        if (book.getStatus() != BookStatus.AVAILABLE) {
             throw new CantDeleteBorrwedBookException("Book with ID " + bookId + " is Borrowed!");
         }
 
