@@ -19,7 +19,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: title
-                  type: VARCHAR(40)
+                  type: VARCHAR(50)
                   constraints:
                     nullable: false
               - column:
@@ -35,6 +35,19 @@ databaseChangeLog:
               - column:
                   name: publish_date
                   type: DATE
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: books-2
+      author: ahmad
+      changes:
+        - addColumn:
+            tableName: books
+            columns:
+              - column:
+                  name: description
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
 

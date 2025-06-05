@@ -1,10 +1,13 @@
 package com.library.library_management_system.entity;
 
-import com.library.library_management_system.enums.MemberRole;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.library.library_management_system.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -15,9 +18,22 @@ public class User {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private MemberRole role;
+    private UserRole role;
 
     private String name;
+    private String password;
     private String email;
-    private LocalDate registration_date;
+
+    @Column(name = "registration_date")
+    private LocalDate registrationDate;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Borrow> borrows;
+
+
+    @PrePersist
+    protected void onCreate() {
+        registrationDate = LocalDate.now();
+    }
 }

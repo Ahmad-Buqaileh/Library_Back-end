@@ -33,6 +33,21 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
+  - changeSet:
+      id: users-2
+      author: ahmad
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: password
+                  type: VARCHAR(20)
+                  defaultValue: 'changeme'
+                  constraints:
+                    nullable: false
+
       rollback:
-        - dropTable:
+        - dropColumn:
+            columnName: password
             tableName: users

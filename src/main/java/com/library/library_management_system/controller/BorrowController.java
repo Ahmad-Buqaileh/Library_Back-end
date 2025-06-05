@@ -1,12 +1,19 @@
 package com.library.library_management_system.controller;
 
+import com.library.library_management_system.dto.request.BorrowRequestDto;
+import com.library.library_management_system.dto.response.BookResponseDto;
+import com.library.library_management_system.dto.response.BorrowResponseDto;
 import com.library.library_management_system.exception.ResourceNotFoundException;
 import com.library.library_management_system.entity.Book;
 import com.library.library_management_system.entity.Borrow;
 import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.BookRepository;
-import com.library.library_management_system.repository.MemberRepository;
+import com.library.library_management_system.repository.UserRepository;
 import com.library.library_management_system.service.BorrowService;
+import com.library.library_management_system.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,43 +23,29 @@ import java.util.List;
 public class BorrowController {
 
     private final BorrowService borrowService;
-    private final MemberRepository memberRepository;
-    private final BookRepository bookRepository;
 
-    public BorrowController(BorrowService borrowService, MemberRepository memberRepository, BookRepository bookRepository) {
+    public BorrowController(BorrowService borrowService, UserService userService) {
         this.borrowService = borrowService;
-        this.memberRepository = memberRepository;
-        this.bookRepository = bookRepository;
     }
 
-    @GetMapping("/member/{memberId}")
-    public List<Borrow> getBorrowedBooksFromMember(@PathVariable Long memberId, @RequestParam Long requestorId) {
-        User user = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
-        User requestor = memberRepository.findById(requestorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Requestor not found"));
+    @GetMapping("/{id}")
+    public ResponseEntity<List<BorrowResponseDto>> getBooksBorrowedByUser(@PathVariable Long id) {
+        List<BorrowResponseDto> response = borrowService.getBooksBorrowedByUser(id);
 
-        return borrowService.getAllBorrowedBooksFromMember(requestor, user);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
-    public Borrow borrowBook(@RequestParam Long memberId, @RequestParam Long bookId) {
-        User user = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
+    public ResponseEntity<BorrowResponseDto> createBorrow(@Valid @RequestBody BorrowRequestDto borrowRequestDto) {
+        BorrowResponseDto response = borrowService.borrowBook(borrowRequestDto);
 
-        return borrowService.bookBorrow(user, book);
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    public void returnBook(@PathVariable Long id, @RequestParam Long memberId, @RequestParam Long bookId) {
-
-        User user = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
-
-        borrowService.returnBook(id, user, book);
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void returnBook(@Valid @RequestBody BorrowRequestDto requestDto) {
+        borrowService.returnBook(requestDto);
     }
+
 }

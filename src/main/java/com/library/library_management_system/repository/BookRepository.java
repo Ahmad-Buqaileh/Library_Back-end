@@ -1,5 +1,6 @@
 package com.library.library_management_system.repository;
 
+import com.library.library_management_system.dto.response.BookResponseDto;
 import com.library.library_management_system.enums.BookStatus;
 import com.library.library_management_system.entity.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,4 +11,5 @@ import java.util.List;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByStatus(BookStatus status);
+    BookResponseDto findBookById(Long id);
 }
