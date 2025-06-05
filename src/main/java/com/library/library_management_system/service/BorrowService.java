@@ -1,17 +1,22 @@
 package com.library.library_management_system.service;
 
 
-import com.library.library_management_system.exception.BookIsBorrowedException;
-import com.library.library_management_system.exception.BookIsNotBorrowedException;
-import com.library.library_management_system.exception.ResourceNotFoundException;
-import com.library.library_management_system.exception.UnauthorizedAccessException;
+import com.library.library_management_system.dto.mapper.BookMapper;
+import com.library.library_management_system.dto.mapper.BorrowMapper;
+import com.library.library_management_system.dto.request.BorrowRequestDto;
+import com.library.library_management_system.dto.response.BookResponseDto;
+import com.library.library_management_system.dto.response.BorrowResponseDto;
+import com.library.library_management_system.dto.response.UserResponseDto;
+import com.library.library_management_system.exception.*;
 import com.library.library_management_system.enums.BookStatus;
-import com.library.library_management_system.enums.MemberRole;
+import com.library.library_management_system.enums.UserRole;
 import com.library.library_management_system.entity.Book;
 import com.library.library_management_system.entity.Borrow;
 import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.BookRepository;
 import com.library.library_management_system.repository.BorrowRepository;
+import com.library.library_management_system.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,66 +28,110 @@ public class BorrowService {
 
     private final BorrowRepository borrowRepository;
     private final BookRepository bookRepository;
-    private final BorrowRepository bookBorrowRepository;
+    private final BorrowMapper borrowMapper;
+    private final BookMapper bookMapper;
+    private final UserRepository userRepository;
 
-    public BorrowService(BorrowRepository borrowRepository, BookRepository bookRepository, BorrowRepository bookBorrowRepository) {
+    public BorrowService(BorrowRepository borrowRepository, BookRepository bookRepository, BorrowMapper borrowMapper, BookMapper bookMapper, UserRepository userRepository) {
         this.borrowRepository = borrowRepository;
         this.bookRepository = bookRepository;
-        this.bookBorrowRepository = bookBorrowRepository;
+        this.borrowMapper = borrowMapper;
+        this.bookMapper = bookMapper;
+        this.userRepository = userRepository;
     }
 
-    public List<Book> getAllBorrowedBooksFromLibrary(User requestor) {
+    public List<BookResponseDto> getAllBorrowedBooksFromLibrary() {
+//        if (requestor.getRole() != UserRole.ADMIN) {
+//            throw new UnauthorizedAccessException("Only admins can see borrowed books");
+//       }
+        List<Book> books = bookRepository.findByStatus(BookStatus.BORROWED);
 
-        if (requestor.getRole() != MemberRole.ADMIN) {
-            throw new UnauthorizedAccessException("Only admins can see borrowed books");
+        if (books.isEmpty()) {
+            throw new EmptyListException("No Borrowed Books found");
         }
 
-        return bookRepository.findByStatus(BookStatus.BORROWED);
+        return books.stream()
+                .map(bookMapper::toBookResponseDto)
+                .toList();
     }
 
-    public List<Borrow> getAllBorrowedBooksFromMember(User requestor, User user) {
+    public List<BookResponseDto> getAllAvailableBooksFromLibrary() {
+//        if (requestor.getRole() != UserRole.ADMIN) {
+//            throw new UnauthorizedAccessException("Only admins can see borrowed books");
+//       }
+        List<Book> books = bookRepository.findByStatus(BookStatus.AVAILABLE);
 
-        if (!requestor.getId().equals(user.getId()) && requestor.getRole() != MemberRole.ADMIN) {
-            throw new UnauthorizedAccessException("You can only see your borrowed books");
+        if (books.isEmpty()) {
+            throw new EmptyListException("No Borrowed Books found");
         }
-        return  borrowRepository.findByUserAndBook_status(user, BookStatus.BORROWED);
+
+        return books.stream()
+                .map(bookMapper::toBookResponseDto)
+                .toList();
     }
 
-    public Borrow bookBorrow(User user, Book book) {
+    public List<BorrowResponseDto> getBooksBorrowedByUser(Long userId) {
+//        if (requestor.getRole() != UserRole.ADMIN) {
+//            throw new UnauthorizedAccessException("Only admins can see borrowed books");
+//       }
+
+        List<Borrow> borrows = borrowRepository.findByUserId(userId);
+
+        if (borrows.isEmpty()) {
+            throw new EmptyListException("No Borrowed Books found");
+        }
+
+        return borrows.stream()
+                .map(borrowMapper::toResponseDto)
+                .toList();
+    }
+
+    @Transactional
+    public BorrowResponseDto borrowBook(BorrowRequestDto requestDto) {
+
+        User user = userRepository.findById(requestDto.getUserId())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("User with id " + requestDto.getUserId() + " not found"));
+
+        Book book = bookRepository.findById(requestDto.getBookId())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Book with id " + requestDto.getBookId() + " not found"));
+
         if (book.getStatus() != BookStatus.AVAILABLE) {
-            throw new BookIsBorrowedException("Book is already borrowed");
+            throw new BookIsBorrowedException("Book is not available");
         }
 
-        book.setStatus(BookStatus.BORROWED);
-        bookRepository.save(book);
+        Borrow borrow = borrowMapper.toEntity(requestDto, user, book);
 
-        Borrow borrow = new Borrow();
         borrow.setUser(user);
         borrow.setBook(book);
-        borrow.setBorrow_date(LocalDate.now());
+        borrow.setBorrowDate(LocalDate.now());
 
-        return borrowRepository.save(borrow);
+        book.setStatus(BookStatus.BORROWED);
+        Borrow savedBorrowed = borrowRepository.save(borrow);
 
+        return borrowMapper.toResponseDto(savedBorrowed);
     }
 
-    public void returnBook(Long borrowId, User user, Book book) {
+    @Transactional
+    public void returnBook(BorrowRequestDto requestDto) {
+        User user = userRepository.findById(requestDto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + requestDto.getUserId() + " not found"));
+
+        Book book = bookRepository.findById(requestDto.getBookId())
+                .orElseThrow(() -> new ResourceNotFoundException("Book with id " + requestDto.getBookId() + " not found"));
 
         if (book.getStatus() != BookStatus.BORROWED) {
             throw new BookIsNotBorrowedException("Book is not currently borrowed.");
         }
 
-        Borrow borrow = borrowRepository.findById(borrowId)
-                .orElseThrow(() -> new ResourceNotFoundException("Borrow record not found."));
-
-        if (!borrow.getUser().getId().equals(user.getId())) {
-            throw new UnauthorizedAccessException("You can only return books you have borrowed.");
-        }
+        Borrow borrow = borrowRepository.findByUserAndBook(user, book)
+                .orElseThrow(() -> new ResourceNotFoundException("No matching borrow record found."));
 
         book.setStatus(BookStatus.AVAILABLE);
         bookRepository.save(book);
 
-        borrowRepository.deleteById(borrowId);
-
+        borrowRepository.delete(borrow);
     }
 
 }

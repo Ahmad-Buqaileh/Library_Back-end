@@ -1,73 +1,93 @@
 package com.library.library_management_system.service;
 
+import com.library.library_management_system.dto.mapper.BookMapper;
+import com.library.library_management_system.dto.request.BookRequestDto;
+import com.library.library_management_system.dto.response.BookResponseDto;
 import com.library.library_management_system.exception.CantDeleteBorrwedBookException;
 import com.library.library_management_system.exception.EmptyListException;
 import com.library.library_management_system.exception.ResourceNotFoundException;
-import com.library.library_management_system.exception.UnauthorizedAccessException;
 import com.library.library_management_system.enums.BookStatus;
-import com.library.library_management_system.enums.MemberRole;
 import com.library.library_management_system.entity.Book;
-import com.library.library_management_system.entity.User;
 import com.library.library_management_system.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/*
+ * Add role checking after adding spring security
+ */
+
 @Service
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final BookMapper bookMapper;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, BookMapper bookMapper) {
         this.bookRepository = bookRepository;
+        this.bookMapper = bookMapper;
     }
 
-    public List<Book> getAllBooks() {
-        List<Book> booksList = bookRepository.findAll();
+    public List<BookResponseDto> getAllBooks() {
+        List<Book> books = bookRepository.findAll();
 
-        if (booksList.isEmpty()) {
+        if (books.isEmpty()) {
             throw new EmptyListException("Library has no books!");
         }
 
-        return booksList;
+        return books.stream()
+                .map(bookMapper::toBookResponseDto)
+                .toList();
     }
 
-    public Book getBookByID(Long bookId) {
+    public BookResponseDto getBookByID(Long bookId) {
 
-        return bookRepository.findById(bookId).orElseThrow(
-                () -> new ResourceNotFoundException("Book with ID " + bookId + " not found!"));
+        return bookMapper
+                .toBookResponseDto(bookRepository
+                        .findById(bookId)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Book not found!")));
 
     }
 
-    public Book addBook(Book book, User requestor) {
+    public BookResponseDto addBook(BookRequestDto requestDto) {
+//        if (requestor.getRole() != UserRole.ADMIN) {
+//            throw new UnauthorizedAccessException("Only admins are allowed to add a book to the library!");
+//        }
 
-        if (requestor.getRole() != MemberRole.ADMIN) {
-            throw new UnauthorizedAccessException("Only admins are allowed to add a book to the library!");
-        }
+        Book book = bookMapper.toEntity(requestDto);
 
-        return bookRepository.save(book);
+        Book savedBook = bookRepository.save(book);
+
+        return bookMapper.toBookResponseDto(savedBook);
     }
 
-    public Book updateBook(Long bookId, Book updatedbook, User requestor) {
+    public BookResponseDto updateBook(Long bookId, BookRequestDto requestDto) {
 
-        if (requestor.getRole() != MemberRole.ADMIN) {
-            throw new UnauthorizedAccessException("Only admins are allowed to update a book to the library!");
-        }
+//        if (requestor.getRole() != UserRole.ADMIN) {
+//            throw new UnauthorizedAccessException("Only admins are allowed to update a book to the library!");
+//        }
 
-        return bookRepository.findById(bookId).map(book -> {
-            book.setTitle(updatedbook.getTitle());
-            book.setAuthor(updatedbook.getAuthor());
-            book.setPublish_date(updatedbook.getPublish_date());
-            book.setGenre(updatedbook.getGenre());
-            return bookRepository.save( book);
-        }).orElseThrow(() -> new ResourceNotFoundException("Book with ID " + bookId + " not found!"));
+        Book book = bookRepository
+                .findById(bookId).orElseThrow(
+                        () -> new ResourceNotFoundException("Book not found!"));
+
+        book.setTitle(requestDto.getTitle());
+        book.setAuthor(requestDto.getAuthor());
+        book.setGenre(requestDto.getGenre());
+        book.setDescription(requestDto.getDescription());
+
+        Book savedBook = bookRepository.save(book);
+
+        return bookMapper.toBookResponseDto(savedBook);
+
     }
 
-    public void deleteBook(Long bookId, User requestor) {
+    public void deleteBook(Long bookId) {
 
-        if (requestor.getRole() != MemberRole.ADMIN) {
-            throw new UnauthorizedAccessException("Only admins are allowed to delete a book from the library!");
-        }
+//        if (requestor.getRole() != UserRole.ADMIN) {
+//            throw new UnauthorizedAccessException("Only admins are allowed to delete a book from the library!");
+//        }
 
         Book book = bookRepository.findById(bookId).orElseThrow(
                 () -> new ResourceNotFoundException("Book with ID " + bookId + " not found!"));

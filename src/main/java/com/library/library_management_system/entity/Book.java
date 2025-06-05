@@ -1,10 +1,12 @@
 package com.library.library_management_system.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.library.library_management_system.enums.BookStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.sql.Date;
+import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "books")
@@ -20,7 +22,15 @@ public class Book {
 
     private String title;
     private String author;
+    private String description;
     private String genre;
-    private Date publish_date;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Borrow> borrows;
+
+
+    @Column(name = "publish_date")
+    private LocalDate publishDate;
 
 }

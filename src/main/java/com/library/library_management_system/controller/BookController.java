@@ -1,10 +1,12 @@
 package com.library.library_management_system.controller;
 
-import com.library.library_management_system.exception.ResourceNotFoundException;
-import com.library.library_management_system.entity.Book;
-import com.library.library_management_system.entity.User;
-import com.library.library_management_system.repository.MemberRepository;
+import com.library.library_management_system.dto.request.BookRequestDto;
+import com.library.library_management_system.dto.response.BookResponseDto;
 import com.library.library_management_system.service.BookService;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,43 +16,42 @@ import java.util.List;
 public class BookController {
 
     private final BookService bookService;
-    private final MemberRepository memberRepository;
 
-    public BookController(BookService bookService, MemberRepository memberRepository) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
-        this.memberRepository = memberRepository;
     }
 
     @GetMapping
-    public List<Book> getAllBooks() {
-        return bookService.getAllBooks();
+    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
+        List<BookResponseDto> books = bookService.getAllBooks();
+
+        return ResponseEntity.ok(books);
     }
 
     @GetMapping("/{id}")
-    public Book getBookById(@PathVariable Long id) {
-        return bookService.getBookByID(id);
+    public ResponseEntity<BookResponseDto> getBookById(@PathVariable Long id) {
+        BookResponseDto response = bookService.getBookByID(id);
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
-    public Book addBook(@RequestBody Book book, @RequestParam Long memberId) {
-        User requestor = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
-        return bookService.addBook(book, requestor);
+    public ResponseEntity<BookResponseDto> createBook(@Valid @RequestBody BookRequestDto bookRequestDto) {
+        BookResponseDto response = bookService.addBook(bookRequestDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    public Book updateBook(@PathVariable Long id, @RequestBody Book book, @RequestParam Long memberId) {
-        User requestor = memberRepository.findById(memberId).orElseThrow(
-                () -> new ResourceNotFoundException("Member not found"));
-        return bookService.updateBook(id, book, requestor);
+    public ResponseEntity<BookResponseDto> updateBook(@PathVariable Long id, @Valid @RequestBody BookRequestDto bookRequestDto) {
+        BookResponseDto response = bookService.updateBook(id, bookRequestDto);
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteBook(@PathVariable Long id, @RequestParam Long memberId) {
-        User requestor = memberRepository.findById(memberId).orElseThrow(
-                () -> new ResourceNotFoundException("Member not found"));
-        bookService.deleteBook(id, requestor);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
     }
-
-
 }
